@@ -1,9 +1,10 @@
 
 
-function UtilReaderHelper(source) {
+function UtilReaderHelper(source,fontSize) {
     this.source=source;
-    this.columnMaxNum=this.getColumns();
-    this.rows=this.getRows();
+    this.columnMaxNum=this.getColumns(fontSize);
+    this.rows=this.getRows(fontSize);
+
 }
 UtilReaderHelper.prop=UtilReaderHelper.prototype;
 
@@ -28,6 +29,7 @@ UtilReaderHelper.prop.rem2px=function(remVal) {
 UtilReaderHelper.prop.getPageHeight=function() {
   let clientHeight=document.documentElement.clientHeight;
   clientHeight=clientHeight-this.rem2px(0.4);
+  console.log(clientHeight);
   return clientHeight;
 };
 //获取页面宽度
@@ -88,24 +90,25 @@ UtilReaderHelper.prop.formatSource=function() {
 UtilReaderHelper.prop.getTotalPage=function(){
     let rows=this.rows;
     let total=this.formatSource(this.source,this.columnMaxNum).length;
-    let totalPage=Math.ceil(Math.floor((total/rows)*10)/10); //截取小数点1位后再向上取整
+    let totalPage=Math.ceil( Math.floor((total/rows)*10)/10 ); //截取小数点1位后再向上取整
     return totalPage;
 };
 //计算列数
-UtilReaderHelper.prop. getColumns=function(){
+UtilReaderHelper.prop. getColumns=function(fontSize){
+  fontSize=fontSize==null?0.34:fontSize;
   //页面宽度
   let clientWidth=this.getPageWidth();
-  //字体宽度 .34rem
-  let columns=Math.floor(this.rem2px(5.8)/this.rem2px(0.34));
+  //字体宽度 .34rem 宽度5.8
+  let columns=Math.floor(this.rem2px(5.8)/this.rem2px(fontSize));
   return columns;
 };
 //计算行数
 UtilReaderHelper.prop.getRows=function(){
-  let lineHeightRem=0.6; //行高
+  let fontSize=this.fontSize==null?0.34:this.fontSize;
+  let lineHeightRem=fontSize+0.259; //行高 和字体差0.259rem
   //页面高度
   let clientHeight=this.getPageHeight();
-  // console.log(clientHeight)
-  let rows= Math.floor(clientHeight/ this.rem2px(lineHeightRem));
+  let rows= Math.floor((clientHeight-this.rem2px(0))/ this.rem2px(lineHeightRem));
   return rows;
 };
 
@@ -115,7 +118,6 @@ UtilReaderHelper.prop.getDirection=function(startPos, endPos) {
   return diff > 0 ? "left" : "right";
 };
 
-
 //计算最大宽度
 UtilReaderHelper.prop.computeMax=function() {
   let width = this.getPageWidth();
@@ -123,5 +125,19 @@ UtilReaderHelper.prop.computeMax=function() {
   return width * (totalPage - 1);
 };
 
-export default UtilReaderHelper;
+UtilReaderHelper.prop.toFixed=function(num,w){
+  w=w==null?2:w;
+  var newNum=num.toString();
+  if(newNum.indexOf('.')>-1){
+    var startNum=newNum.substr(0,newNum.indexOf('.'));
+    var endNum=newNum.substr(newNum.indexOf('.'),w+1);
+    newNum=parseFloat(startNum+''+endNum);
+  }else{
+    newNum=parseFloat(startNum+''+endNum);
+  }
+  return newNum;
+}
 
+
+
+export default UtilReaderHelper;

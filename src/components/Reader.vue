@@ -1,33 +1,40 @@
 <template>
   <div id="container">
-    <!--<h3>标题</h3>-->
-    <div
-         :style="{height:pageHeight+'px',transform:'translateX('+translateX+'px)',transition:'transform '+transformDelay+'s ease-in-out'}"
-         id="inner"
-         class="inner">
-      <p v-for="row in listRows">{{row}}</p>
+    <!--  平滑-->
+    <div :style="{height:pageHeight+'px',transform:'translateX('+translateX+'px)',transition:'transform '+transformDelay+'s ease-out'}" class="inner" v-if="showType=='smooth'">
+      <div :class="index==0?'h3':'p'" :style="{fontSize:fontSize+'rem',lineHeight:(lineHeight+fontSize)+'rem'}" v-for="(row, index)  in listRows">
+        {{row}}
+      </div>
     </div>
+
+    <!-- 仿真-->
+    <div class="freader-viewport" v-if="showType=='simulation'">
+
+    		<div class="freader">
+	         <div v-for="(row, i)  in listRows"  >
+                <p v-for="(p,index) in row" :class="(i==0&&index==0)?'h3':'p'" :style="{fontSize:fontSize+'rem',lineHeight:(lineHeight+fontSize)+'rem'}">
+                  {{p}}
+                </p>
+            </div>
+    		</div>
+
+
+
+    </div>
+
     <!--底部分页-->
     <div class="page">
       <span>{{cur}}</span>
       <span>/</span>
       <span>{{total}}</span>
     </div>
+
+
+
+
   </div>
 </template>
 <style>
-  * {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  body, div, h3, p {
-    margin: 0;
-    padding: 0;
-  }
 
   body {
     overflow: hidden;
@@ -35,6 +42,8 @@
     -webkit-overflow-scrolling: touch;
     overflow-scrolling: touch;
   }
+
+
 
   #container {
     position: absolute;
@@ -44,45 +53,37 @@
     overflow: hidden;
   }
 
-  #inner {
+  .inner {
     margin: .2rem 0;
-    /*display: flex;*/
     columns: 7.3rem 1;
     column-gap: 0;
     column-break-inside: avoid;
   }
-
-  /*#inner div {*/
-  /*flex: 1;*/
-  /*padding: 0 .3rem;*/
-  /*!* float: left; *!*/
-  /*}*/
-
-  p {
+  .p {
     text-align: justify;
     padding: 0 .3rem;
     line-height: .6rem;
     font-size: .34rem;
     margin: 0 auto;
+    color: #777;
   }
-
-  h3 {
-    font-size: .4rem;
+  .h3 {
+    font-size: .4rem !important;
     text-align: left;
-    position: fixed;
-    top: .4rem;
-    left: .3rem;
     width: 100%;
-    margin-top: .1rem;
+    font-weight: 800;
+    margin:.15rem 0 .3rem .2rem;
+    color: #777;
   }
 
   .page {
-    position: fixed;
+    position: absolute;
     bottom: .2rem;
     right: .3rem;
     color: #999;
     height: .4rem;
     font-size: .3rem;
+    z-index: 0;
   }
 
   span {
@@ -91,12 +92,56 @@
     float: left;
   }
 </style>
+<style>
+/**
+* 仿真模式样式
+* @type {[type]}
+*/
+.freader-viewport .page{
+width:410px;
+height:668px;
+background: rgb(234, 199, 141);
+background-repeat:no-repeat;
+background-size:100% 100%;
+}
+
+.freader .page{
+-webkit-box-shadow:0 0 20px rgba(0,0,0,0.2);
+-moz-box-shadow:0 0 20px rgba(0,0,0,0.2);
+-ms-box-shadow:0 0 20px rgba(0,0,0,0.2);
+-o-box-shadow:0 0 20px rgba(0,0,0,0.2);
+box-shadow:0 0 20px rgba(0,0,0,0.2);
+}
+
+.freader-viewport .page img{
+-webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+margin:0;
+}
+
+.freader-viewport .shadow{
+-webkit-transition: -webkit-box-shadow 0.5s;
+-moz-transition: -moz-box-shadow 0.5s;
+-o-transition: -webkit-box-shadow 0.5s;
+-ms-transition: -ms-box-shadow 0.5s;
+
+-webkit-box-shadow:0 0 20px #ccc;
+-moz-box-shadow:0 0 20px #ccc;
+-o-box-shadow:0 0 20px #ccc;
+-ms-box-shadow:0 0 20px #ccc;
+box-shadow:0 0 20px #ccc;
+}
+
+</style>
 <script>
   import UtilReaderHelper from '@/utils/UtilReaderHelper';
-
   let helper = null;
-  let chapterURL = "https://novel.juhe.im/chapters/http%3A%2F%2Fvip.zhuishushenqi.com%2Fchapter%2F56f8da0a176d03ac1983f6fd%3Fcv%3D15271418534811";
   export default {
+    props:['source','title'],
     data() {
       return {
         translateX: 0, //位移
@@ -111,19 +156,78 @@
         startX: 0,
         startY: 0,
         moveX: 0,
-        moveY: 0
+        moveY: 0,
+        fontSize:.34,
+        titleSize:.4,
+        lineHeight:.259,
+        rowNum:0,
+        showType:'simulation',//'simulation'
       }
     },
-    mounted() {
-      this.init();
+    watch:{
+        source(newVal,oldVal){
+            if(newVal!=oldVal){
+                  this.init();
+                if(this.showType=='smooth'){}else{
+                  // alert(1);
+                  var _this=this;
+                  _this.$nextTick(function(){
+                    _this.initSimulation();
+                  })
+                  // setTimeout(function(){
+                  //   _this.initSimulation();
+                  // },1000)
+
+                }
+            }
+        },
+        fontSize(newVal,oldVal){
+          if(newVal!=oldVal){
+            this.resizeReader();
+            // if(this.showType=='smooth'){
+            //
+            // }else{
+            //   this.initSimulation();
+            // }
+            // this.resizeReader();
+          }
+        }
     },
     methods: {
-      initReader(source) {
-        helper = new UtilReaderHelper(source);
+      initReader() {
+        this.resizeReader();
+        if(this.showType=='smooth'){
+          this.addListener();
+        }
+      },
+
+      //初始化仿真
+      initSimulation(){
+        var clientHeight=document.documentElement.clientHeight;
+        var clientWidth=document.documentElement.clientWidth;
+        var _this=this;
+        $('.freader').turn({
+            width:clientWidth,
+            height:clientHeight,
+            elevation: 50,
+            acceleration:true,
+            display:'single',
+            gradients: true,
+            autoCenter: true,
+            when:{
+    　　　　　turned: function(e, page) {
+                _this.setShowPage(page,_this.total)
+    　　　　　　}
+    　　　　}
+        });
+      },
+      //重新计算
+      resizeReader(){
+        helper = new UtilReaderHelper(this.source,this.fontSize);
+        this.rowNum=helper.getRows();
         let totalPage = helper.getTotalPage();
         this.renderRow();
-        this.setShowPage(1, totalPage);
-        this.addListener();
+        this.setShowPage(this.cur, totalPage);
       },
       //添加监听
       addListener(){
@@ -137,17 +241,12 @@
 
         document.addEventListener('touchmove', function (e) {
           e.preventDefault();
-          // e.stopPropagation();
           e = e.changedTouches[0];
           _this.moveX = e.pageX;
           _this.moveY = e.pageY;
           _this.isMoving = true;
           if (Math.abs(_this.startY - _this.moveY) < Math.abs(_this.startX - _this.moveX)) {
             _this.updatePosition(_this.startX, _this.moveX);
-          }else{
-            // alert(1);
-            // e.preventDefault();
-            // e.stopPropagation();
           }
         }, {passive: false});
 
@@ -160,14 +259,7 @@
         }, {passive: false})
       },
       init() {
-        let _this = this;
-        axios.get(chapterURL)
-          .then(function (response) {
-            let source = response.data.chapter.cpContent;
-            _this.initReader(source);
-          }).catch(function (error) {
-          console.log(error);
-        });
+        this.initReader();
       },
       //渲染一行
       renderRow() {
@@ -175,9 +267,23 @@
         let ary = helper.formatSource();
         let reg = /\@/g;
         let _this = this;
-        ary.forEach(function (p) {
-          _this.listRows.push(p.replace(reg, ''));
+        _this.listRows=[];
+        let groupNum=0;
+        let tmpAry=[];
+        ary.forEach(function (p,index) {
+            if(_this.showType=="simulation"){ //仿真模式分组
+              if(index>0&&index%_this.rowNum==0){
+                _this.listRows[groupNum++]=tmpAry;
+                tmpAry=[];
+              }else{
+                  tmpAry.push(p.replace(reg, ''));
+              }
+            }else{
+              _this.listRows.push(p.replace(reg, ''));
+            }
+
         })
+        console.log(_this.listRows);
       },
       //更新位置
       updatePosition(startPos, endPos, target) {
@@ -211,6 +317,22 @@
         this.cur = curPage;
         this.total = totalPage;
       },
+      //改变字体
+      changeFontSize(fontSize){
+          this.fontSize=fontSize;
+      },
+      changeBig(){
+          this.$emit('changeBig');
+          this.fontSize=helper.toFixed(this.fontSize+0.01,2);
+          this.resizeReader();
+      },
+      changeSmail(){
+         this.$emit('changeSmail');
+         this.fontSize=helper.toFixed(this.fontSize-0.01,2); // parseFloat(Math.floor((this.fontSize-0.01)*100)/100);
+         this.resizeReader();
+      },
+
+
       //设置过渡位置
       setPosition(translateX) {
         let max = helper.computeMax();
@@ -224,10 +346,15 @@
         }
         this.translateX=translateX;
         if (this.isMoving) {
-          this.transformDelay = 0;
+            if(this.transformDelay==0.25){
+              this.transformDelay = 0;
+            }
         } else {
-          this.transformDelay = .25;
+          if(this.transformDelay==0){
+            this.transformDelay = .25;
+          }
         }
+        console.log("translateX::::::"+translateX);
         this.totalX = this.translateX;
       }
     }
