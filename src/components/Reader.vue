@@ -75,7 +75,6 @@
     margin:.15rem 0 .3rem .2rem;
     color: #777;
   }
-
   .page {
     position: absolute;
     bottom: .2rem;
