@@ -29,7 +29,7 @@ UtilReaderHelper.prop.rem2px=function(remVal) {
 UtilReaderHelper.prop.getPageHeight=function() {
   let clientHeight=document.documentElement.clientHeight;
   clientHeight=clientHeight-this.rem2px(0.4);
-  console.log(clientHeight);
+  // console.log(clientHeight);
   return clientHeight;
 };
 //获取页面宽度

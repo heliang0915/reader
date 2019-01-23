@@ -17,21 +17,13 @@
                 </p>
             </div>
     		</div>
-
-
-
     </div>
-
     <!--底部分页-->
     <div class="page">
       <span>{{cur}}</span>
       <span>/</span>
       <span>{{total}}</span>
     </div>
-
-
-
-
   </div>
 </template>
 <style>
@@ -280,9 +272,8 @@ box-shadow:0 0 20px #ccc;
             }else{
               _this.listRows.push(p.replace(reg, ''));
             }
-
         })
-        console.log(_this.listRows);
+        // console.log(_this.listRows);
       },
       //更新位置
       updatePosition(startPos, endPos, target) {
