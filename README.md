@@ -1,6 +1,6 @@
 # reader
 
-> A Vue.js project
+> A Vue.js project modify
 
 ## Build Setup
 
